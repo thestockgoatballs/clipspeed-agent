@@ -1,0 +1,8 @@
+{
+  "name": "clipspeed",
+  "owner": { "name": "ClipSpeed", "url": "https://www.clipspeed.ai" },
+  "metadata": { "description": "ClipSpeed for Claude Code: clip videos and live streams into captioned shorts, then plan and schedule posts to YouTube, TikTok, Instagram, X, LinkedIn, Threads, Bluesky and Facebook Pages.", "version": "1.1.0" },
+  "plugins": [
+    { "name": "clipspeed", "source": "./plugins/clipspeed", "description": "Clipping + agentic scheduling through the hosted ClipSpeed MCP server (OAuth, no key) and the clipspeed skill.", "version": "1.1.0", "category": "productivity", "keywords": ["social-media", "scheduler", "video", "clips", "mcp"] }
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "clipspeed": { "type": "http", "url": "https://api.clipspeed.ai/mcp" }
+  }
+}

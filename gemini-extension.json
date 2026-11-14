@@ -1,0 +1,9 @@
+{
+  "name": "clipspeed",
+  "version": "1.1.0",
+  "description": "ClipSpeed for Gemini CLI: clip videos and live streams into captioned shorts, then plan and schedule posts to 8 platforms.",
+  "mcpServers": {
+    "clipspeed": { "httpUrl": "https://api.clipspeed.ai/mcp" }
+  },
+  "contextFileName": "GEMINI.md"
+}

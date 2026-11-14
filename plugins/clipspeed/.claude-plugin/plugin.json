@@ -1,0 +1,11 @@
+{
+  "name": "clipspeed",
+  "version": "1.1.0",
+  "description": "Clip any video or live stream into captioned shorts, then plan and schedule posts (text, images, video, clips) to 8 platforms — the hosted ClipSpeed MCP server plus the clipspeed skill.",
+  "author": { "name": "ClipSpeed", "url": "https://www.clipspeed.ai/agents/claude-code/" },
+  "homepage": "https://www.clipspeed.ai/agents/claude-code/",
+  "repository": "https://github.com/thestockgoatballs/clipspeed-agent",
+  "license": "MIT",
+  "keywords": ["clipspeed", "social-media", "scheduler", "clips", "mcp"],
+  "mcpServers": "./.mcp.json"
+}
