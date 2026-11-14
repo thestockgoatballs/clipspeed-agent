@@ -1,7 +1,7 @@
 {
   "name": "clipspeed-mcp",
   "version": "1.1.0",
-  "description": "ClipSpeed for AI agents \u2014 clip any video or live stream into captioned shorts, then plan and schedule posts (text, images, video, clips) to YouTube, TikTok, Instagram, X, LinkedIn, Threads, Bluesky and Facebook Pages. MCP server + `clipspeed` CLI over your personal API key.",
+  "description": "ClipSpeed for AI agents — clip any video or live stream into captioned shorts, then plan and schedule posts (text, images, video, clips) to YouTube, TikTok, Instagram, X, LinkedIn, Threads, Bluesky and Facebook Pages. MCP server + `clipspeed` CLI over your personal API key.",
   "keywords": [
     "agent",
     "ai",
@@ -28,8 +28,8 @@
   "license": "MIT",
   "type": "commonjs",
   "bin": {
-    "clipspeed": "./bin/clipspeed.js",
-    "clipspeed-mcp": "./bin/cli.js"
+    "clipspeed": "bin/clipspeed.js",
+    "clipspeed-mcp": "bin/cli.js"
   },
   "files": [
     "LICENSE",
