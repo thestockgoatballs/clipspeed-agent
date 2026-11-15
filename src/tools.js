@@ -299,17 +299,24 @@ function buildTools({ baseUrl, apiKey, fetchImpl, downloadsDir } = {}) {
     {
       name: 'schedule_post',
       description:
-        "Schedule a post to the user's connected social accounts (youtube, tiktok, instagram, x, linkedin). Content is one of: clip_id (a finished ClipSpeed clip, from get_clip_status), text (a text post — X and LinkedIn), or media_url (a public https image or video link; text is its caption). A picked scheduled_at is booked exactly or refused with the next open time; omit it to post as soon as possible. preview: true books nothing and returns the plan. Returns, per platform, the scheduled time in the user's time zone and the post id, or why it was not scheduled.",
+        "Schedule a post to the user's connected social accounts (youtube, tiktok, instagram, x, linkedin, linkedin_page, threads, bluesky, facebook). Every post follows ClipSpeed's posting rules, the same for every kind of post: at most 4 posts a day per platform (2 on LinkedIn and LinkedIn Pages), spaced 1–4 h apart by platform (list_channels gives each one's numbers), and the same words or file never go to one account twice within 30 days — a refusal says why and gives the next open time. Content is one of: clip_id (a finished ClipSpeed clip, from get_clip_status), text (a text post — X and LinkedIn), media_url (a public https image or video link; text is its caption), or media_urls (a carousel). media_urls (2 or more public https image/video links, in order) makes ONE carousel post: Instagram up to 10 (images and videos), Threads up to 20 (images and videos), Facebook Page up to 10 images, X and Bluesky up to 4 images, TikTok up to 32 images (a photo post), LinkedIn up to 20 images (sent as a swipeable PDF document); YouTube and Pinterest take one file, and a platform that cannot take the set is refused at booking, never cut. A picked scheduled_at is booked exactly or refused with the next open time; omit it to post as soon as possible. preview: true books nothing and returns the plan. Returns, per platform, the scheduled time in the user's time zone and the post id, or why it was not scheduled. post_type 'story' posts an Instagram or Facebook Page story instead (no caption; media_urls become separate stories in order, up to 10).",
       inputSchema: {
         type: 'object',
         properties: {
-          platforms: { type: 'array', items: { type: 'string', enum: ['tiktok', 'youtube', 'instagram', 'x', 'linkedin'] }, description: 'Platforms to publish to.' },
+          platforms: { type: 'array', items: { type: 'string', enum: ['youtube', 'tiktok', 'instagram', 'x', 'linkedin', 'linkedin_page', 'threads', 'bluesky', 'facebook'] }, description: 'Platforms to publish to (each must be connected — list_channels). linkedin_page = a LinkedIn company Page; facebook = a Facebook Page.' },
           clip_id: { type: 'string', description: 'A finished clip to publish (from get_clip_status).' },
           text: { type: 'string', description: 'Post text / caption (required for a text post).' },
           caption: { type: 'string', description: 'Alias of text.' },
           title: { type: 'string', description: 'Post title where the platform has one (YouTube requires it).' },
           hashtags: { type: 'array', items: { type: 'string' } },
+          per_platform: {
+            type: 'object',
+            description: 'Optional per-channel copy: override text, title or hashtags for one platform, e.g. { "x": { "text": "short version" } }. Keys must be in platforms; a field left out uses the shared one. Each platform is checked against its own limit.',
+            additionalProperties: { type: 'object', properties: { text: { type: 'string' }, title: { type: 'string' }, hashtags: { type: 'array', items: { type: 'string' } } }, additionalProperties: false },
+          },
           media_url: { type: 'string', description: 'Public https link to an image or video to post.' },
+          media_urls: { type: 'array', items: { type: 'string' }, maxItems: 32, description: 'A carousel: 2 or more public https image/video links, in order. Use instead of media_url.' },
+          post_type: { type: 'string', enum: ['feed', 'story'], description: "'feed' (default) or 'story' (Instagram, Facebook Page; no caption; media_urls = stories in order)." },
           scheduled_at: { type: 'string', description: 'ISO 8601 time to publish. Omit to publish as soon as possible.' },
           preview: { type: 'boolean', description: 'true = plan only, book nothing.' },
           privacy_status: { type: 'string', enum: ['public', 'unlisted', 'private'], description: 'YouTube only.' },
@@ -324,7 +331,10 @@ function buildTools({ baseUrl, apiKey, fetchImpl, downloadsDir } = {}) {
             text: a.text != null ? a.text : a.caption,
             title: a.title,
             hashtags: a.hashtags,
+            per_platform: a.per_platform,
             media_url: a.media_url,
+            media_urls: Array.isArray(a.media_urls) && a.media_urls.length ? a.media_urls : undefined,
+            ...(a.post_type ? { post_type: a.post_type } : {}),
             scheduled_at: a.scheduled_at,
             preview: a.preview === true,
             privacy_status: a.privacy_status,

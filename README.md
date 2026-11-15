@@ -1,6 +1,6 @@
 # ClipSpeed for AI agents — `clipspeed-mcp` + the `clipspeed` CLI
 
-Clip any video or live stream into scored, captioned shorts, then **plan and schedule posts** — your own text, images, video or those clips — to YouTube, TikTok, Instagram, X, LinkedIn, Threads, Bluesky and Facebook Pages. The same tools everywhere: a hosted MCP server (OAuth, no key), this package's local MCP server (API key), and the `clipspeed` command line for agents that run commands.
+Clip any video or live stream into scored, captioned shorts, then **plan and schedule posts** — your own text, images, video or those clips — to YouTube, TikTok, Instagram, X, LinkedIn (profiles and company Pages), Threads, Bluesky and Facebook Pages. The same tools everywhere: a hosted MCP server (OAuth, no key), this package's local MCP server (API key), and the `clipspeed` command line for agents that run commands.
 
 Requires a ClipSpeed **paid plan or the $1 trial**. Keys: **https://www.clipspeed.ai/dashboard/api-key/** (they look like `csai_live_…`).
 
@@ -12,18 +12,18 @@ Requires a ClipSpeed **paid plan or the $1 trial**. Keys: **https://www.clipspee
 | **Claude Code** | `claude mcp add --transport http clipspeed https://api.clipspeed.ai/mcp` — or the plugin: `/plugin marketplace add thestockgoatballs/clipspeed-agent` then `/plugin install clipspeed@clipspeed` |
 | **ChatGPT** | Developer mode → Connectors → custom connector `https://api.clipspeed.ai/mcp` |
 | **Codex** | `codex mcp add clipspeed --url https://api.clipspeed.ai/mcp` |
-| **Cursor / Windsurf / Cline / any MCP client** | add the MCP server URL `https://api.clipspeed.ai/mcp` (OAuth), or run this package locally: `npx clipspeed-mcp@1.1.0` with `CLIPSPEED_API_KEY` |
+| **Cursor / Windsurf / Cline / any MCP client** | add the MCP server URL `https://api.clipspeed.ai/mcp` (OAuth), or run this package locally: `npx clipspeed-mcp@1.1.1` with `CLIPSPEED_API_KEY` |
 | **Gemini CLI** | `gemini extensions install https://github.com/thestockgoatballs/clipspeed-agent` |
 | **OpenClaw, Hermes Agent, Grok Build, Paperclip, nanoclaw, cron, CI** — anything that runs commands | `npm i -g clipspeed-mcp` then `clipspeed auth:key csai_live_…`, and give the agent `SKILL.md` (`npx skills add thestockgoatballs/clipspeed-agent`) |
-| **Claude Desktop (local server)** | `npx clipspeed-mcp@1.1.0 install` writes the server into your Claude Desktop config |
+| **Claude Desktop (local server)** | `npx clipspeed-mcp@1.1.1 install` writes the server into your Claude Desktop config |
 
 ## What the tools do
 
-**Scheduling** — `list_channels` (what is connected, what each platform takes, limits, the account's time zone) · `connect_channel` (a 10-minute link that connects one platform) · `platform_settings` · `schedule_post` (a clip, a text post, or an image/video by URL; `preview: true` books nothing; a picked time is booked exactly or refused with the next open slot) · **`plan_week`** (a project's clips laid over the next 7 days — up to 14 — on the connected platforms, best first, inside the account's limits; `approve: true` books it) · `list_scheduled_posts` · `update_scheduled_post` · `cancel_scheduled_post` · `post_analytics`.
+**Scheduling** — `list_channels` (what is connected, what each platform takes, limits, the account's time zone) · `connect_channel` (a 10-minute link that connects one platform) · `platform_settings` · `schedule_post` (a clip, a text post, or an image/video by URL; write it once and adjust any platform with `per_platform: { x: { text }, youtube: { title } }`; `preview: true` books nothing; a picked time is booked exactly or refused with the next open slot) · **`plan_week`** (a project's clips laid over the next 7 days — up to 14 — on the connected platforms, best first, inside the account's limits; `approve: true` books it) · `list_scheduled_posts` · `update_scheduled_post` · `cancel_scheduled_post` · `post_analytics`.
 
 **Clipping** — `clip_video` / `get_clip_status` / `list_clips` / `download_clip` / `restyle_captions` · `discover_trending` · `get_usage`. (The hosted server at `api.clipspeed.ai/mcp` adds live-stream clipping and AI image/video generation.)
 
-Every booking goes through the same rules as the ClipSpeed app: the account's daily caps and spacing, each platform's text limits (X counts every link as 23), one piece of content per platform once (a retry never double-posts), and nothing a user picked is ever silently moved.
+Every booking goes through the same rules as the ClipSpeed app — the same for every kind of post, to keep accounts from being flagged: at most 4 posts a day per platform (2 on LinkedIn), spaced (YouTube and Instagram 4 h, TikTok/X/Facebook 2 h, Threads/Bluesky 1 h, LinkedIn 4 h), no near-copies to one account within 30 days, each platform's text limits (X counts every link as 23), one piece of content per platform once (a retry never double-posts), and nothing a user picked is ever silently moved.
 
 ## The CLI
 
@@ -50,7 +50,7 @@ clipspeed posts:list --status scheduled · clipspeed posts:update <id> -c "new c
 
 ```bash
 export CLIPSPEED_API_KEY=csai_live_…
-npx clipspeed-mcp@1.1.0           # stdio MCP server
+npx clipspeed-mcp@1.1.1           # stdio MCP server
 ```
 
 Pin the version. Env: `CLIPSPEED_API_KEY` (required), `CLIPSPEED_BASE_URL` (default `https://api.clipspeed.ai`).

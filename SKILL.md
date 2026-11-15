@@ -1,6 +1,6 @@
 ---
 name: clipspeed
-description: Use when the user wants to turn a video or live stream into ready-to-post captioned clips, schedule or publish social media posts (text, images, video or clips) to YouTube, TikTok, Instagram, X, LinkedIn, Threads, Bluesky or a Facebook Page, plan a week of posts, connect a social account, check what is scheduled, or read a post's numbers — through ClipSpeed.
+description: Use when the user wants to turn a video or live stream into ready-to-post captioned clips, schedule or publish social media posts (text, images, video or clips) to YouTube, TikTok, Instagram, X, LinkedIn (profile or company Page), Threads, Bluesky or a Facebook Page, plan a week of posts, connect a social account, check what is scheduled, or read a post's numbers — through ClipSpeed.
 metadata:
   requirements:
     env:
@@ -36,7 +36,11 @@ Install: `npm i -g clipspeed-mcp` (gives `clipspeed`), then `clipspeed auth:key 
    clip id. Local files: upload them somewhere public first, or clip through ClipSpeed.
 5. **Same words = same post.** Re-running a command with identical content on the same platform is refused
    as a duplicate, so a retry never double-posts. Change the text to post again.
-6. **Report what the command returned** — the post ids, local times, refusals and their next open slot.
+6. **Never promise more posting than the rules allow.** ClipSpeed's limits are the same for every kind of post and
+   protect the account from being flagged: at most 4 posts a day per platform (2 on LinkedIn and LinkedIn Pages),
+   spaced YouTube/Instagram 4 h, TikTok/X/Facebook 2 h, Threads/Bluesky 1 h, LinkedIn 4 h; the same words or the same
+   file never go to one account twice within 30 days. `channels:list` gives each platform's numbers — quote them.
+7. **Report what the command returned** — the post ids, local times, refusals and their next open slot.
    Never claim a post went out: `posts:list` shows status and the public link once the platform issued an id.
 
 ## The standard flows
@@ -49,6 +53,7 @@ Install: `npm i -g clipspeed-mcp` (gives `clipspeed`), then `clipspeed auth:key 
 
 **A post the user dictated**
 - `clipspeed posts:create -p x,linkedin -c "Shipping agentic scheduling today." --at 2026-12-01T14:00:00Z --preview`
+- `clipspeed posts:create -p x,linkedin -c "The long LinkedIn version…" --x-text "The short X version" --preview` (one post, its own copy on X; each platform is checked against its own limit)
   then the same without `--preview`. Omit `--at` to post as soon as the account's spacing allows (the
   answer says when). `--media <url>` for an image/video; `--clip <clip-id>` for a ClipSpeed clip;
   `--title` where the platform has one (YouTube requires it); `--privacy unlisted` for YouTube.
@@ -67,7 +72,7 @@ Install: `npm i -g clipspeed-mcp` (gives `clipspeed`), then `clipspeed auth:key 
 | `channels:list` | connected channels, what each takes, limits, the account time zone | |
 | `channels:connect <platform>` | 10-minute connect link for the user | |
 | `settings <platform>` | the rules for one platform | |
-| `posts:create` | book one post on one or more platforms | `-p` `-c` `--media` `--clip` `--at` `--title` `--hashtags` `--privacy` `--preview` |
+| `posts:create` | book one post on one or more platforms; adjust it per channel with `--x-text`, `--linkedin-text`, `--youtube-title` … or `--per-platform '<json>'` | `-p` `-c` `--media` `--carousel` (comma list, in order) `--type story` + `--stories a,b` (Instagram / Facebook Page stories, in order, no caption) `--clip` `--at` `--title` `--hashtags` `--privacy` `--preview` `--<platform>-text` `--per-platform` |
 | `plan` | lay a project's clips over the next days; `--approve` books | `--project` `--clips` `-p` `--days` `--preset steady\|balanced\|beast` |
 | `posts:list` / `posts:update` / `posts:cancel` / `analytics` | the calendar | `--status` `--platform` |
 | `clip <url>` / `status <job>` / `clips` / `download <job>` | clipping | `--style` `--aspect` `--count` |

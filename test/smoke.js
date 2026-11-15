@@ -208,7 +208,15 @@ function lastApiCall(calls) {
     eq('discover degrade reason', res.reason, 'no_fresh_candidates');
   }
 
-  // ── 8. schedule_post → POST /schedule, caption→description ──────────────
+  // ── 7b. (2026-11-15) schedule_post takes every platform the server posts to — 1.1.0 shipped only the first five ──
+{
+  const t = buildTools({ baseUrl: 'https://x.test', apiKey: 'csai_test', fetchImpl: async () => ({ ok: true, status: 200, json: async () => ({}), text: async () => '{}' }) }).find((x) => x.name === 'schedule_post');
+  const en = t.inputSchema.properties.platforms.items.enum;
+  for (const p of ['youtube', 'tiktok', 'instagram', 'x', 'linkedin', 'linkedin_page', 'threads', 'bluesky', 'facebook']) ok(`schedule_post accepts ${p}`, en.includes(p));
+  ok("schedule_post states the posting rules", /4 posts a day/.test(t.description) && /30 days/.test(t.description));
+}
+
+// ── 8. schedule_post → POST /schedule, caption→description ──────────────
   {
     const { byName, calls } = toolsWith(() => ({ json: { success: true, scheduled: [] } }));
     await byName.schedule_post.handler({ clip_id: 'c1', platforms: ['tiktok', 'youtube'], caption: 'hi', title: 'T', scheduled_at: '2026-08-01T00:00:00Z' });

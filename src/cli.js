@@ -26,7 +26,7 @@ const COMMANDS = {
   'channels:list':    { tool: 'list_channels',          args: {} },
   'channels:connect': { tool: 'connect_channel',        positional: ['platform'] },
   'settings':         { tool: 'platform_settings',      positional: ['platform'] },
-  'posts:create':     { tool: 'schedule_post',          flags: { p: 'platforms', platforms: 'platforms', c: 'text', text: 'text', caption: 'text', m: 'media_url', media: 'media_url', clip: 'clip_id', at: 'scheduled_at', title: 'title', hashtags: 'hashtags', privacy: 'privacy_status', preview: 'preview' }, lists: ['platforms', 'hashtags'], bools: ['preview'] },
+  'posts:create':     { tool: 'schedule_post',          flags: { p: 'platforms', platforms: 'platforms', c: 'text', text: 'text', caption: 'text', m: 'media_url', media: 'media_url', carousel: 'media_urls', stories: 'media_urls', type: 'post_type', clip: 'clip_id', at: 'scheduled_at', title: 'title', hashtags: 'hashtags', privacy: 'privacy_status', preview: 'preview' }, lists: ['platforms', 'hashtags', 'media_urls'], bools: ['preview'], perPlatform: true },
   'posts:list':       { tool: 'list_scheduled_posts',   flags: { status: 'status', platform: 'platform', limit: 'limit', from: 'from', to: 'to' } },
   'posts:update':     { tool: 'update_scheduled_post',  positional: ['post_id'], flags: { c: 'text', text: 'text', title: 'title', hashtags: 'hashtags' }, lists: ['hashtags'] },
   'posts:cancel':     { tool: 'cancel_scheduled_post',  positional: ['post_id'] },
@@ -73,8 +73,28 @@ function parseArgv(argv) {
   return { flags, pos };
 }
 
+// Per-channel copy (the per_platform contract): --per-platform '<json>' and/or --<platform>-text,
+// --<platform>-title, --<platform>-hashtags (e.g. --x-text "short version" --youtube-title "…").
+const PER_PLATFORM_FLAG = /^(youtube|tiktok|instagram|x|linkedin_page|linkedin|facebook|threads|bluesky|pinterest)-(text|caption|title|hashtags)$/;
+function perPlatformFromFlags(flags) {
+  let pp = null;
+  if (flags['per-platform'] !== undefined) {
+    try { pp = JSON.parse(String(flags['per-platform'])); } catch (_) { throw new Error('--per-platform must be JSON, e.g. \'{"x":{"text":"short version"}}\''); }
+    if (!pp || typeof pp !== 'object' || Array.isArray(pp)) throw new Error('--per-platform must be a JSON object keyed by platform.');
+  }
+  for (const [k, v] of Object.entries(flags)) {
+    const m = PER_PLATFORM_FLAG.exec(k);
+    if (!m || v === true) continue;
+    pp = pp || {};
+    const field = m[2] === 'caption' ? 'text' : m[2];
+    pp[m[1]] = { ...(pp[m[1]] || {}), [field]: field === 'hashtags' ? String(v).split(',').map((s) => s.trim()).filter(Boolean) : String(v) };
+  }
+  return pp;
+}
+
 function buildArgs(spec, { flags, pos }) {
   const out = { ...(spec.args || {}) };
+  if (spec.perPlatform) { const pp = perPlatformFromFlags(flags); if (pp) out.per_platform = pp; }
   (spec.positional || []).forEach((name, i) => { if (pos[i] != null) out[name] = pos[i]; });
   for (const [flag, name] of Object.entries(spec.flags || {})) {
     if (flags[flag] === undefined) continue;
@@ -112,6 +132,9 @@ function help() {
     'Examples:',
     '  clipspeed channels:list',
     '  clipspeed posts:create -p x,linkedin -c "Shipping agentic scheduling today." --at 2026-12-01T14:00:00Z --preview',
+    '  clipspeed posts:create -p instagram,linkedin -c "Five lessons" --carousel https://…/1.png,https://…/2.png,https://…/3.png --preview',
+    '  clipspeed posts:create -p instagram,facebook --type story --stories https://…/1.jpg,https://…/2.mp4 --at 2026-12-01T14:00:00Z',
+    '  clipspeed posts:create -p x,linkedin -c "The long LinkedIn version…" --x-text "The short X version" --preview',
     '  clipspeed plan --project 3f2e… --days 7            # show the week',
     '  clipspeed plan --project 3f2e… --days 7 --approve  # book it',
     '  clipspeed clip https://youtu.be/… --style karaoke && clipspeed status <job_id>', '',
@@ -140,7 +163,8 @@ async function main(argv = process.argv.slice(2), { fetchImpl, stdout = process.
   const tools = buildTools({ baseUrl, apiKey, fetchImpl });
   const tool = tools.find((t) => t.name === spec.tool);
   if (!tool) { stderr.write(`Tool ${spec.tool} is missing from this build.\n`); return 2; }
-  const args = buildArgs(spec, { flags, pos });
+  let args;
+  try { args = buildArgs(spec, { flags, pos }); } catch (e) { stderr.write(`✗ ${e.message}\n`); return 2; }
   try {
     const result = await tool.handler(args);
     out(result);
@@ -153,4 +177,4 @@ async function main(argv = process.argv.slice(2), { fetchImpl, stdout = process.
   }
 }
 
-module.exports = { main, parseArgv, buildArgs, COMMANDS, ALIASES, render, resolveKey, CRED_FILE };
+module.exports = { main, parseArgv, buildArgs, perPlatformFromFlags, COMMANDS, ALIASES, render, resolveKey, CRED_FILE };
